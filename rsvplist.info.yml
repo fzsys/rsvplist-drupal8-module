@@ -5,3 +5,6 @@ description: 'Allows user to RSVP for events and provides a contact list for adm
 package: RSVP list
 version: 1.0
 configure: rsvplist.admin_settings
+
+dependencies:
+  - block

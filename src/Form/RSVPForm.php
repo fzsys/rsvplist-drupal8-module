@@ -6,6 +6,7 @@
 namespace Drupal\rsvplist\Form;
 
 use Drupal\Console\Bootstrap\Drupal;
+use Drupal\Core\Database\Database;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\user\Entity\User;
@@ -55,8 +56,20 @@ class RSVPForm extends FormBase
   public function validateForm(array &$form, FormStateInterface $form_state)
   {
     $value = $form_state->getValue('email');
+
     if ($value == !\Drupal::service('email.validator')->isValid($value)) {
       $form_state->setErrorByName('email', t('Email %mail is not valid', ['%mail' => $value]));
+    }
+
+    $node = \Drupal::routeMatch()->getParameter('node');
+    $select = Database::getConnection()->select('rsvplist', 'r');
+    $select->fields('r', ['nid']);
+    $select->condition('nid', $node->id());
+    $select->condition('mail', $value);
+    $result = $select->execute();
+
+    if (!empty($result->fetchCol())) {
+      $form_state->setErrorByName('email', t('The address %mail is already subscribed to this list', ['%mail' => $value]));
     }
   }
 
